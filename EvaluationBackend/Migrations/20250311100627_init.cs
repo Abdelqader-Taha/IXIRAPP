@@ -107,8 +107,8 @@ namespace IXIR.Migrations
                 columns: new[] { "Id", "CreationDate", "Deleted", "Name" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2025, 3, 11, 9, 29, 8, 428, DateTimeKind.Utc).AddTicks(2105), false, "Admin" },
-                    { 2, new DateTime(2025, 3, 11, 9, 29, 8, 428, DateTimeKind.Utc).AddTicks(2110), false, "DataEntry" }
+                    { 1, new DateTime(2025, 3, 11, 10, 6, 27, 689, DateTimeKind.Utc).AddTicks(9535), false, "Admin" },
+                    { 2, new DateTime(2025, 3, 11, 10, 6, 27, 689, DateTimeKind.Utc).AddTicks(9539), false, "DataEntry" }
                 });
 
             migrationBuilder.CreateIndex(

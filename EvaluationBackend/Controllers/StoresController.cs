@@ -6,7 +6,7 @@ using System.Security.Claims;
 
 namespace EvaluationBackend.Controllers
 {
-    [Authorize(Roles = "Admin,DataEntry")]
+    [Authorize(Roles = "DataEntry")]
     [Route("api/[controller]")]
     [ApiController]
     public class StoresController : ControllerBase
@@ -44,11 +44,6 @@ namespace EvaluationBackend.Controllers
 
             return Ok(new { stores, paginationMeta });
         }
-
-
-
-        
-
 
 
         [HttpGet("{id}")]
@@ -110,8 +105,9 @@ namespace EvaluationBackend.Controllers
             {
                 return NotFound(new { message = error });
             }
-            return Ok(updatedStore);
+            return Ok( new {Message= "Store updated successfully." });
         }
+
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteStoreByIdAsync(Guid id)
@@ -121,7 +117,7 @@ namespace EvaluationBackend.Controllers
             {
                 return NotFound(new { message = error });
             }
-            return NoContent();
+            return Ok(new { message = "Store deleted successfully." });
         }
 
         [HttpPut("undelete/{id}")]

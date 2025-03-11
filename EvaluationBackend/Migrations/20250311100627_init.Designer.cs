@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace IXIR.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250311092908_init")]
+    [Migration("20250311100627_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -90,14 +90,14 @@ namespace IXIR.Migrations
                         new
                         {
                             Id = 1,
-                            CreationDate = new DateTime(2025, 3, 11, 9, 29, 8, 428, DateTimeKind.Utc).AddTicks(2105),
+                            CreationDate = new DateTime(2025, 3, 11, 10, 6, 27, 689, DateTimeKind.Utc).AddTicks(9535),
                             Deleted = false,
                             Name = "Admin"
                         },
                         new
                         {
                             Id = 2,
-                            CreationDate = new DateTime(2025, 3, 11, 9, 29, 8, 428, DateTimeKind.Utc).AddTicks(2110),
+                            CreationDate = new DateTime(2025, 3, 11, 10, 6, 27, 689, DateTimeKind.Utc).AddTicks(9539),
                             Deleted = false,
                             Name = "DataEntry"
                         });
