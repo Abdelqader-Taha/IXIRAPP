@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using IXIR.Entities;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EvaluationBackend.Entities
@@ -8,19 +9,15 @@ namespace EvaluationBackend.Entities
 
         [Required]
         public Guid UserId { get; set; }  // Foreign Key
-
         public AppUser User { get; set; }
 
         [Required]
         public string StoreName { get; set; }
 
         [Required]
-        public string ProductType { get; set; }
+        public string StoreType { get; set; }
 
         public string? City { get; set; }
-
-        [Required]
-        public string StoreType { get; set; }
 
         [Required]
         public string PhoneNumber { get; set; }
@@ -34,5 +31,10 @@ namespace EvaluationBackend.Entities
 
         [Url]
         public string Link { get; set; }
+
+        // Foreign Key to Product
+        [Required]
+        public Guid ProductId { get; set; }
+        public Product Product { get; set; }
     }
     }

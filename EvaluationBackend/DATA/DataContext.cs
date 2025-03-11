@@ -1,6 +1,7 @@
 using EvaluationBackend.Entities;
 using Microsoft.EntityFrameworkCore;
 using BCrypt.Net;
+using IXIR.Entities;
 
 namespace EvaluationBackend.DATA
 {
@@ -13,6 +14,7 @@ namespace EvaluationBackend.DATA
         public DbSet<AppUser> Users { get; set; }
         public DbSet<Store> Stores { get; set; }
         public DbSet<Role> Roles { get; set; }
+        public DbSet<Product> Products { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -21,6 +23,12 @@ namespace EvaluationBackend.DATA
                 .WithMany()
                 .HasForeignKey(s => s.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Store>()
+                .HasOne(s => s.Product)
+                .WithMany()
+                .HasForeignKey(s => s.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Role>().HasData(
                 new Role { Id = 1, Name = "Admin" },
@@ -49,15 +57,13 @@ namespace EvaluationBackend.DATA
             var adminUser = new AppUser
             {
                 UserName = adminUsername,
-                FullName = "Admin", 
-                Password = BCrypt.Net.BCrypt.HashPassword(adminPassword),  
-                RoleId = adminRole.Id 
+                FullName = "Admin",
+                Password = BCrypt.Net.BCrypt.HashPassword(adminPassword),
+                RoleId = adminRole.Id
             };
 
             context.Users.Add(adminUser);
             context.SaveChanges();
         }
-
-
     }
 }

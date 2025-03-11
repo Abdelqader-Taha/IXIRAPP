@@ -9,11 +9,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace EvaluationBackend.Migrations
+namespace IXIR.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250306133638_initttttt222")]
-    partial class initttttt222
+    [Migration("20250311092908_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -32,7 +32,7 @@ namespace EvaluationBackend.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime?>("CreationDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<bool>("Deleted")
                         .HasColumnType("boolean");
@@ -42,12 +42,15 @@ namespace EvaluationBackend.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("LastActive")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Password")
                         .HasColumnType("text");
 
                     b.Property<int?>("RoleId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("StoreCount")
                         .HasColumnType("integer");
 
                     b.Property<string>("UserName")
@@ -61,59 +64,6 @@ namespace EvaluationBackend.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("EvaluationBackend.Entities.Article", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("CreationDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("Deleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Title")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Articles");
-                });
-
-            modelBuilder.Entity("EvaluationBackend.Entities.Permission", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Action")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("CreationDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("Deleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("FullName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Subject")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Permissions");
-                });
-
             modelBuilder.Entity("EvaluationBackend.Entities.Role", b =>
                 {
                     b.Property<int>("Id")
@@ -123,7 +73,7 @@ namespace EvaluationBackend.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime?>("CreationDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<bool>("Deleted")
                         .HasColumnType("boolean");
@@ -135,21 +85,22 @@ namespace EvaluationBackend.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Roles");
-                });
 
-            modelBuilder.Entity("EvaluationBackend.Entities.RolePermission", b =>
-                {
-                    b.Property<int>("RoleId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("PermissionId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("RoleId", "PermissionId");
-
-                    b.HasIndex("PermissionId");
-
-                    b.ToTable("RolePermissions");
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreationDate = new DateTime(2025, 3, 11, 9, 29, 8, 428, DateTimeKind.Utc).AddTicks(2105),
+                            Deleted = false,
+                            Name = "Admin"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreationDate = new DateTime(2025, 3, 11, 9, 29, 8, 428, DateTimeKind.Utc).AddTicks(2110),
+                            Deleted = false,
+                            Name = "DataEntry"
+                        });
                 });
 
             modelBuilder.Entity("EvaluationBackend.Entities.Store", b =>
@@ -162,7 +113,7 @@ namespace EvaluationBackend.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("CreationDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<bool>("Deleted")
                         .HasColumnType("boolean");
@@ -182,9 +133,8 @@ namespace EvaluationBackend.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("ProductType")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("StoreLogo")
                         .HasColumnType("text");
@@ -202,9 +152,32 @@ namespace EvaluationBackend.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ProductId");
+
                     b.HasIndex("UserId");
 
                     b.ToTable("Stores");
+                });
+
+            modelBuilder.Entity("IXIR.Entities.Product", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("CreationDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("EvaluationBackend.Entities.AppUser", b =>
@@ -216,44 +189,23 @@ namespace EvaluationBackend.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("EvaluationBackend.Entities.RolePermission", b =>
-                {
-                    b.HasOne("EvaluationBackend.Entities.Permission", "Permission")
-                        .WithMany("RolePermissions")
-                        .HasForeignKey("PermissionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("EvaluationBackend.Entities.Role", "Role")
-                        .WithMany("RolePermissions")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Permission");
-
-                    b.Navigation("Role");
-                });
-
             modelBuilder.Entity("EvaluationBackend.Entities.Store", b =>
                 {
+                    b.HasOne("IXIR.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("EvaluationBackend.Entities.AppUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Product");
+
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("EvaluationBackend.Entities.Permission", b =>
-                {
-                    b.Navigation("RolePermissions");
-                });
-
-            modelBuilder.Entity("EvaluationBackend.Entities.Role", b =>
-                {
-                    b.Navigation("RolePermissions");
                 });
 #pragma warning restore 612, 618
         }

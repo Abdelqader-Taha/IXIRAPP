@@ -9,7 +9,7 @@ namespace EvaluationBackend.Services
 {
     public interface IUserService
     {
-        Task<(UserDto? user, string? error)> Login(LoginForm loginForm);
+        Task<(string? token, string? error)> Login(LoginForm loginForm);
         Task<(AppUser? user, string? error)> DeleteUser(Guid id);
         Task<(UserDto? userDto, string? error)> Register(RegisterForm registerForm);
         Task<(AppUser? user, string? error)> UpdateUser(UpdateUserForm updateUserForm, Guid id);
@@ -32,7 +32,7 @@ namespace EvaluationBackend.Services
             _tokenService = tokenService;
         }
 
-        public async Task<(UserDto? user, string? error)> Login(LoginForm loginForm)
+        public async Task<(string? token, string? error)> Login(LoginForm loginForm)
         {
             var user = await _repositoryWrapper.User.Get(u => u.UserName == loginForm.UserName && !u.Deleted,
                                                          i => i.Include(x => x.Role));
@@ -41,10 +41,13 @@ namespace EvaluationBackend.Services
             if (!BCrypt.Net.BCrypt.Verify(loginForm.Password, user.Password)) return (null, "Wrong password");
 
             var userDto = _mapper.Map<UserDto>(user);
-            userDto.Token = _tokenService.CreateToken(userDto, user.Role);
+
+            var token = _tokenService.CreateToken(userDto, user.Role);
+
             user.LastActive = DateTime.UtcNow;
             await _repositoryWrapper.Save();
-            return (userDto, null);
+
+            return (token, null);
         }
 
         public async Task<(AppUser? user, string? error)> DeleteUser(Guid id)
@@ -88,15 +91,10 @@ namespace EvaluationBackend.Services
             var user = await _repositoryWrapper.User.Get(u => u.Id == id && !u.Deleted);
             if (user == null) return (null, "User not found or deleted");
 
-            if (!string.IsNullOrEmpty(updateUserForm.UserName) && user.UserName != updateUserForm.UserName)
-                user.UserName = updateUserForm.UserName;
+            // Keep old data if no new value is provided
+            user.UserName = string.IsNullOrEmpty(updateUserForm.UserName) ? user.UserName : updateUserForm.UserName;
+            user.FullName = string.IsNullOrEmpty(updateUserForm.FullName) ? user.FullName : updateUserForm.FullName;
 
-            if (!string.IsNullOrEmpty(updateUserForm.FullName) && user.FullName != updateUserForm.FullName)
-                user.FullName = updateUserForm.FullName;
-
-            
-
-            // Update RoleId if provided and exists
             if (updateUserForm.RoleId > 0 && user.RoleId != updateUserForm.RoleId)
             {
                 var role = await _repositoryWrapper.Role.Get(r => r.Id == updateUserForm.RoleId);
@@ -136,16 +134,12 @@ namespace EvaluationBackend.Services
 
         public async Task<(IEnumerable<UserDto> users, int totalUsers, string? error)> GetAllUsers(int pageNumber, int pageSize)
         {
-            
             var users = await _repositoryWrapper.User.GetAll(include: query => query.Include(role => role.Role));
 
-           
             var activeUsers = users.data.Where(u => !u.Deleted);
 
-            
             var totalUsers = activeUsers.Count();
 
-          
             var pagedUsers = activeUsers
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -156,21 +150,21 @@ namespace EvaluationBackend.Services
                 return (null, totalUsers, "No users found");
             }
 
-            
-            var userDtos = _mapper.Map<IEnumerable<UserDto>>(pagedUsers);
+            var userDtos = _mapper.Map<IEnumerable<UserDto>>(pagedUsers).ToList();
 
-           
-            //foreach (var userDto in userDtos)
-            //{
-              //  var user = pagedUsers.First(u => u.Id == userDto.Id); 
-                ///if (user.Role.Name == "DataEntry")
-               /// {
-                  //  userDto.StoreCount = user.StoreCount; 
-               // }
-            //}
+            // Remove StoreCount for Admin users
+            foreach (var userDto in userDtos)
+            {
+                var user = pagedUsers.First(u => u.Id == userDto.Id);
+                if (user.Role.Name == "Admin")
+                {
+                    userDto.StoreCount = null;  
+                }
+            }
 
             return (userDtos, totalUsers, null);
         }
+
 
         public async Task<(UserDto? user, string? error)> ChangePassword(ChangePasswordForm changePasswordForm, Guid id)
         {

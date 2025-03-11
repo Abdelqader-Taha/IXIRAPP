@@ -24,18 +24,24 @@ namespace EvaluationBackend.Controllers
         [HttpPost("Login")]
         public async Task<IActionResult> Login(LoginForm loginForm)
         {
-            var (user, error) = await _userService.Login(loginForm);
+            var (token, error) = await _userService.Login(loginForm);
             if (error != null) return Unauthorized(new { message = error });
-            return Ok(user);
+            return Ok(new { token });
         }
 
-        //[Authorize(Roles = "Admin")]
+
+        [Authorize(Roles = "Admin")]
         [HttpPost("Register")]
         public async Task<IActionResult> Register(RegisterForm registerForm)
         {
             var (user, error) = await _userService.Register(registerForm);
-            if (error != null) return BadRequest(new { message = error });
-            return Ok(user);
+
+            if (!string.IsNullOrEmpty(error))
+            {
+                return BadRequest(new { message = error });
+            }
+
+            return Ok(new { message = "Registration successful." });
         }
 
         [Authorize(Roles = "Admin")]
@@ -102,7 +108,7 @@ namespace EvaluationBackend.Controllers
 
             if (error != null)
             {
-                return NotFound(new { message = $"User With id {id} not found or has already been deleted." });
+                return NotFound(new { message = $"User  not found or has already been deleted." });
             }
 
             return Ok(new { message = "User successfully deleted." });
@@ -120,6 +126,34 @@ namespace EvaluationBackend.Controllers
 
             return Ok(new { message = "Password changed successfully", user });
         }
+
+        [HttpGet("Profile")]
+        public async Task<IActionResult> GetProfile()
+        {
+            // Get the current user ID from the token claims (we use the "id" claim)
+            var userIdClaim = User.FindFirst("id") ?? User.FindFirst("sub"); 
+
+            if (userIdClaim == null)
+            {
+                return Unauthorized(new { message = "User ID not found in token" });
+            }
+
+            if (!Guid.TryParse(userIdClaim.Value, out var userId))
+            {
+                return Unauthorized(new { message = "Invalid user ID format" });
+            }
+
+            // Fetch the user profile using the userId
+            var (user, error) = await _userService.GetUserById(userId);
+
+            if (error != null)
+            {
+                return NotFound(new { message = error });
+            }
+
+            return Ok(user);
+        }
+
 
     }
 }

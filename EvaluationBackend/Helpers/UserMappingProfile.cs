@@ -4,6 +4,8 @@ using EvaluationBackend.DATA.DTOs.roles;
 using EvaluationBackend.DATA.DTOs.Store;
 using EvaluationBackend.DATA.DTOs.User;
 using EvaluationBackend.Entities;
+using IXIR.DATA.DTOs.Product;
+using IXIR.Entities;
 using OneSignalApi.Model;
 
 
@@ -22,7 +24,9 @@ namespace EvaluationBackend.Helpers
 
             CreateMap<Role, RoleDto>();
             CreateMap<AppUser, AppUser>();
-            
+            CreateMap<Product,ProductDTO>();
+            CreateMap<CreateProductForm, Product>();
+            CreateMap<UpDateProductForm, Product>();
 
             CreateMap<Store,StoreDTO>();
 

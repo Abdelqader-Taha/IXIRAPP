@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace EvaluationBackend.DATA.DTOs.Store
 {
@@ -10,13 +11,13 @@ namespace EvaluationBackend.DATA.DTOs.Store
         public string StoreName { get; set; }
 
         [Required]
-        public string ProductType { get; set; }
+        public Guid ProductId { get; set; }  // Reference to the Product entity
+
 
         public string? City { get; set; }
 
         [Required]
         public string StoreType { get; set; }
-
 
         [Required]
         public string PhoneNumber { get; set; }
@@ -29,7 +30,6 @@ namespace EvaluationBackend.DATA.DTOs.Store
         [Required]
         public int Followers { get; set; }
 
-        
         public string? Link { get; set; }
     }
 }

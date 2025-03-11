@@ -46,41 +46,8 @@ namespace EvaluationBackend.Controllers
         }
 
 
-        [HttpGet("distinct-product-types")]
-        public async Task<IActionResult> GetDistinctProductTypes()
-        {
-            var (productTypes, error) = await _storeService.GetDistinctProductTypes();
 
-            if (error != null)
-            {
-                return BadRequest(new { message = error });
-            }
-
-            return Ok(productTypes);
-        }
-
-        [HttpGet("stores-by-product-type")]
-        public async Task<IActionResult> GetStoresByProductType([FromQuery] List<string> productTypes)
-        {
-            // If the productTypes list is empty or null, return an error
-            if (productTypes == null || !productTypes.Any())
-            {
-                return BadRequest(new { message = "Product types are required." });
-            }
-
-            // Call the service method with the list of product types
-            var (stores, error) = await _storeService.GetStoresByProductType(productTypes);
-
-            // If there was an error, return a BadRequest response with the error message
-            if (!string.IsNullOrEmpty(error))
-            {
-                return BadRequest(new { message = error });
-            }
-
-            // Return the stores as a successful response
-            return Ok(stores);
-        }
-
+        
 
 
 
@@ -95,9 +62,8 @@ namespace EvaluationBackend.Controllers
             return Ok(store);
         }
 
-        [Authorize] // Ensure the user is authenticatedz
+        [Authorize]
         [HttpPost]
-        
         public async Task<IActionResult> CreateStoreAsync([FromBody] CreateStoreForm req)
         {
             if (req == null)
@@ -105,8 +71,22 @@ namespace EvaluationBackend.Controllers
                 return BadRequest(new { message = "Invalid store data" });
             }
 
+            // Get the current user ID from the token claims
+            var userIdClaim = User.FindFirst("id") ?? User.FindFirst("sub"); // Adjust claim name as needed
 
-            var (store, error) = await _storeService.CreateStore( req);
+            if (userIdClaim == null)
+            {
+                return Unauthorized(new { message = "User ID not found in token" });
+            }
+
+            if (!Guid.TryParse(userIdClaim.Value, out var userId))
+            {
+                return Unauthorized(new { message = "Invalid user ID format" });
+            }
+
+            // Pass the user ID to the service
+            var (store, error) = await _storeService.CreateStore(req, userId);
+
             if (error != null)
             {
                 return BadRequest(new { message = error });
@@ -114,6 +94,7 @@ namespace EvaluationBackend.Controllers
 
             return Ok(store);
         }
+
 
 
         [HttpPut("{id}")]

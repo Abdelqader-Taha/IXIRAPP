@@ -8,7 +8,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace EvaluationBackend.Migrations
+namespace IXIR.Migrations
 {
     [DbContext(typeof(DataContext))]
     partial class DataContextModelSnapshot : ModelSnapshot
@@ -87,14 +87,14 @@ namespace EvaluationBackend.Migrations
                         new
                         {
                             Id = 1,
-                            CreationDate = new DateTime(2025, 3, 8, 14, 20, 37, 725, DateTimeKind.Utc).AddTicks(137),
+                            CreationDate = new DateTime(2025, 3, 11, 9, 29, 8, 428, DateTimeKind.Utc).AddTicks(2105),
                             Deleted = false,
                             Name = "Admin"
                         },
                         new
                         {
                             Id = 2,
-                            CreationDate = new DateTime(2025, 3, 8, 14, 20, 37, 725, DateTimeKind.Utc).AddTicks(142),
+                            CreationDate = new DateTime(2025, 3, 11, 9, 29, 8, 428, DateTimeKind.Utc).AddTicks(2110),
                             Deleted = false,
                             Name = "DataEntry"
                         });
@@ -130,9 +130,8 @@ namespace EvaluationBackend.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("ProductType")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("StoreLogo")
                         .HasColumnType("text");
@@ -150,9 +149,32 @@ namespace EvaluationBackend.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ProductId");
+
                     b.HasIndex("UserId");
 
                     b.ToTable("Stores");
+                });
+
+            modelBuilder.Entity("IXIR.Entities.Product", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("CreationDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("EvaluationBackend.Entities.AppUser", b =>
@@ -166,11 +188,19 @@ namespace EvaluationBackend.Migrations
 
             modelBuilder.Entity("EvaluationBackend.Entities.Store", b =>
                 {
+                    b.HasOne("IXIR.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("EvaluationBackend.Entities.AppUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Product");
 
                     b.Navigation("User");
                 });

@@ -5,6 +5,9 @@ using EvaluationBackend.Interface;
 using EvaluationBackend.Respository;
 using EvaluationBackend.Interface;  // Corrected name of the namespace
 using EvaluationBackend.Repository;
+using IXIR.Services;
+using IXIR.Interface;
+using IXIR.Repository;
 
 
 namespace EvaluationBackend.Repository
@@ -17,8 +20,20 @@ namespace EvaluationBackend.Repository
         private IUserRepository _user;  
         private IRoleRepository _role;
         private IStoreRespository _store;
+        private IProductRepository  _product;
 
-        
+        public IProductRepository Product { get {
+
+                if ( _product ==null)
+                {
+                    _product = new ProductRepository(_context, _mapper);
+
+                }
+                return _product;
+            
+         } }
+
+
         public IRoleRepository Role {  get {
             if(_role == null)
             {

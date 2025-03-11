@@ -1,20 +1,21 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace EvaluationBackend.DATA.DTOs.Store
 {
     public class UpDateStoreForm
     {
+        public string Link { get; set; }
         [Required]
         public string StoreName { get; set; }
 
         [Required]
-        public string ProductType { get; set; }
+        public Guid ProductId { get; set; }  // Reference to Product entity
 
         public string? City { get; set; }
 
         [Required]
         public string StoreType { get; set; }
-
 
         [Required]
         public string PhoneNumber { get; set; }
@@ -25,11 +26,7 @@ namespace EvaluationBackend.DATA.DTOs.Store
         public string PlatformType { get; set; }
 
         [Required]
-        public int Followers { get; set; }
-
-        //[Url]
-        public string Link { get; set; }
-        //public bool? Deleted { get; set; } // Nullable, in case it’s not provided in the update request
+        public int? Followers { get; set; }
 
     }
 }

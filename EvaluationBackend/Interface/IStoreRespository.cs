@@ -15,8 +15,7 @@ namespace EvaluationBackend.Interface
         Task<Store> CreateStore(Store store);
         Task<Store> UpdateStore(Store store);
         Task<Store> DeleteStore(Store store);
-        Task<List<string>> GetDistinctProductTypes();
-        Task<(IEnumerable<StoreDTO> stores, string? error)> GetStoresByProductType(List<string> productTypes);
+        Task<int> CountAsync();
 
 
 

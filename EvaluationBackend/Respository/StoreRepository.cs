@@ -27,6 +27,7 @@ namespace EvaluationBackend.Respository
             var count = await _context.Stores.CountAsync();
             return (stores, count);
         }
+
         public async Task<(List<Store> data, int totalCount)> GetStores(Expression<Func<Store, bool>> predicate,
            Func<IQueryable<Store>, IIncludableQueryable<Store, object>> include, int pageNumber = 0)
         {
@@ -66,52 +67,12 @@ namespace EvaluationBackend.Respository
             return store;
         }
 
-        public async Task<List<string>> GetDistinctProductTypes()
+        
+       
+        public async Task<int> CountAsync()
         {
-            // Query to get distinct product types from stores
-            var productTypes = await _context.Stores
-                .Where(s => !s.Deleted)  // Exclude deleted stores
-                .Select(s => s.ProductType)  // Select only the ProductType
-                .Distinct()  // Get distinct values
-                .ToListAsync();  // Execute asynchronously
-
-            return productTypes;
+            return await _context.Stores.CountAsync();
         }
-        public async Task<(IEnumerable<StoreDTO> stores, string? error)> GetStoresByProductType(List<string> productTypes)
-        {
-            try
-            {
-                // Normalize the productTypes (trim spaces and convert to lowercase)
-                var normalizedProductTypes = productTypes.Select(pt => pt.Trim().ToLower()).ToList();
-
-                // Query the database for stores
-                var stores = await _context.Stores
-                    .ToListAsync(); // Retrieve all stores into memory
-
-                // Filter stores in memory based on product types
-                var filteredStores = stores
-                    .Where(store => store.ProductType
-                        .Split(',') // Split the productType field into individual types
-                        .Select(s => s.Trim().ToLower()) // Normalize and trim the individual types
-                        .Any(pt => normalizedProductTypes.Contains(pt))) // Check if any of the product types match
-                    .ToList();
-
-                
-                if (!filteredStores.Any())
-                {
-                    return (null, "No stores found for the selected product types.");
-                }
-
-                
-                var storeDTOs = _mapper.Map<IEnumerable<StoreDTO>>(filteredStores);
-                return (storeDTOs, null); 
-            }
-            catch (Exception ex)
-            {
-                return (null, ex.Message); 
-            }
-        }
-
 
 
     }

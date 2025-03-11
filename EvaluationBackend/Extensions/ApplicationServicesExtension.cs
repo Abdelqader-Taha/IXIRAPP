@@ -11,7 +11,8 @@ using EvaluationBackend.Repository;
 using EvaluationBackend.Services;
 using EvaluationBackend.Entities;
 using EvaluationBackend.Services;
-using Microsoft.AspNetCore.Identity;   // Corrected name of the namespace
+using Microsoft.AspNetCore.Identity;
+using IXIR.Services;   // Corrected name of the namespace
 
 namespace EvaluationBackend.Extensions
 {
@@ -26,6 +27,7 @@ namespace EvaluationBackend.Extensions
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IStoreService,StoreService>();
+            services.AddScoped<IProductService,ProductService>();
             services.AddScoped<AuthorizeActionFilter>();
 
 
