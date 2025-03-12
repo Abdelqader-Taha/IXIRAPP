@@ -7,5 +7,7 @@ namespace IXIR.Entities
     {
         [Required]
         public string Name  { get; set; }
+        public List<Store> Stores { get; set; } = new List<Store>();
+
     }
 }

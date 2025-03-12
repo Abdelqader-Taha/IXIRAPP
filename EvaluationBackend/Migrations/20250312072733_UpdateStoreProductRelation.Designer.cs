@@ -3,6 +3,7 @@ using System;
 using EvaluationBackend.DATA;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace IXIR.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250312072733_UpdateStoreProductRelation")]
+    partial class UpdateStoreProductRelation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -54,10 +57,6 @@ namespace IXIR.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("avatar")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.HasKey("Id");
 
                     b.HasIndex("RoleId");
@@ -91,14 +90,14 @@ namespace IXIR.Migrations
                         new
                         {
                             Id = 1,
-                            CreationDate = new DateTime(2025, 3, 12, 19, 57, 21, 527, DateTimeKind.Utc).AddTicks(491),
+                            CreationDate = new DateTime(2025, 3, 12, 7, 27, 32, 884, DateTimeKind.Utc).AddTicks(8889),
                             Deleted = false,
                             Name = "Admin"
                         },
                         new
                         {
                             Id = 2,
-                            CreationDate = new DateTime(2025, 3, 12, 19, 57, 21, 527, DateTimeKind.Utc).AddTicks(495),
+                            CreationDate = new DateTime(2025, 3, 12, 7, 27, 32, 884, DateTimeKind.Utc).AddTicks(8893),
                             Deleted = false,
                             Name = "DataEntry"
                         });

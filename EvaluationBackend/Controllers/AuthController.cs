@@ -24,10 +24,11 @@ namespace EvaluationBackend.Controllers
         [HttpPost("Login")]
         public async Task<IActionResult> Login(LoginForm loginForm)
         {
-            var (token, error) = await _userService.Login(loginForm);
+            var (token, role, error) = await _userService.Login(loginForm);
             if (error != null) return Unauthorized(new { message = error });
-            return Ok(new { token });
+            return Ok(new { token, role });
         }
+
 
 
         [Authorize(Roles = "Admin")]
@@ -41,8 +42,11 @@ namespace EvaluationBackend.Controllers
                 return BadRequest(new { message = error });
             }
 
-            return Ok(new { message = "Registration successful." });
+            return Ok(new { message = "Registration successful." }); // Only returning the success message
         }
+
+
+
 
         [Authorize(Roles = "Admin")]
         [HttpGet("User/{id}")]

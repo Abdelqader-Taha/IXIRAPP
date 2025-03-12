@@ -8,7 +8,7 @@ namespace EvaluationBackend.DATA.DTOs.User
         public string Role { get; set; }
         public string Token { get; set; }
         public int? StoreCount { get; set; }
-
+        public  string avatar { get; set; }
         public DateTime? LastActive { get; set; } 
 
     }

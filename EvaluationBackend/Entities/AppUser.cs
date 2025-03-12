@@ -16,7 +16,8 @@ namespace EvaluationBackend.Entities
         public Role? Role { get; set; }
         public int StoreCount { get; set; }
         public DateTime? LastActive { get; set; } = DateTime.UtcNow;
-    
+        public  string avatar { get; set; }
+
     }
     
 }

@@ -21,13 +21,18 @@ namespace IXIR.Controllers
         [HttpPost("upload")]
         [ProducesResponseType(200, Type = typeof(string))]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> UploadFiles([FromForm] string? language, IFormFileCollection files)
+        public async Task<IActionResult> UploadFiles([FromForm] string language, IFormFileCollection files)
         {
-            // Set default language to English if not provided
-            language = language?.ToLower() ?? "en";
+            // Validate and normalize the selected language
+            var supportedLanguages = new List<string> { "en", "ar", "ku" };
+            if (string.IsNullOrEmpty(language) || !supportedLanguages.Contains(language.ToLower()))
+            {
+                language = "en"; 
+            }
+
+            language = language.ToLower();
             string responseMessage;
 
-            // Language-specific messages
             var messages = new Dictionary<string, Dictionary<string, string>>()
             {
                 { "en", new Dictionary<string, string> {
@@ -40,16 +45,16 @@ namespace IXIR.Controllers
                     { "file_size_exceeded", "حجم الملف يتجاوز الحد الأقصى البالغ 10 ميجابايت." },
                     { "upload_success", "تم تحميل الملفات بنجاح." }
                 }},
-                { "kr", new Dictionary<string, string> {
-                    { "no_files", "업로드된 파일이 없습니다." },
-                    { "file_size_exceeded", "파일 크기가 10MB 제한을 초과합니다." },
-                    { "upload_success", "파일이 성공적으로 업로드되었습니다." }
+                { "ku", new Dictionary<string, string> {
+                    { "no_files", "هیچ فایلێک بار نەکرا." },
+                    { "file_size_exceeded", "قەبارەی فایلەکە زیاترە لە 10MB." },
+                    { "upload_success", "فایلەکان بە سەرکەوتوویی بارکران." }
                 }},
-            }; 
+            };
 
             if (files == null || files.Count == 0)
             {
-                responseMessage = messages.ContainsKey(language) ? messages[language]["no_files"] : messages["en"]["no_files"];
+                responseMessage = messages[language]["no_files"];
                 return BadRequest(responseMessage);
             }
 
@@ -59,14 +64,12 @@ namespace IXIR.Controllers
             {
                 if (file.Length > 0)
                 {
-                    // Check the file size (max 10MB)
                     if (file.Length > 10 * 1024 * 1024)
                     {
-                        responseMessage = messages.ContainsKey(language) ? messages[language]["file_size_exceeded"] : messages["en"]["file_size_exceeded"];
+                        responseMessage = messages[language]["file_size_exceeded"];
                         return BadRequest(responseMessage);
                     }
 
-                    // Generate a unique file name
                     var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
                     var filePath = Path.Combine(_storagePath, fileName);
 
@@ -81,7 +84,7 @@ namespace IXIR.Controllers
             }
 
             // Return the file paths as a comma-separated string
-            responseMessage = messages.ContainsKey(language) ? messages[language]["upload_success"] : messages["en"]["upload_success"];
+            responseMessage = messages[language]["upload_success"];
             return Ok(new { message = responseMessage, filePaths });
         }
     }

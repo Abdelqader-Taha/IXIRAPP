@@ -2,6 +2,7 @@ using EvaluationBackend.Entities;
 using Microsoft.EntityFrameworkCore;
 using BCrypt.Net;
 using IXIR.Entities;
+using System.Linq;
 
 namespace EvaluationBackend.DATA
 {
@@ -24,11 +25,11 @@ namespace EvaluationBackend.DATA
                 .HasForeignKey(s => s.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Many-to-Many Relationship Between Store and Product
             modelBuilder.Entity<Store>()
-                .HasOne(s => s.Product)
-                .WithMany()
-                .HasForeignKey(s => s.ProductId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasMany(s => s.Products)
+                .WithMany(p => p.Stores)
+                .UsingEntity(j => j.ToTable("StoreProducts")); 
 
             modelBuilder.Entity<Role>().HasData(
                 new Role { Id = 1, Name = "Admin" },
@@ -40,7 +41,6 @@ namespace EvaluationBackend.DATA
 
         public static void SeedAdminUser(DataContext context, string adminUsername, string adminPassword)
         {
-            // Ensure that the roles exist in the DB
             var adminRole = context.Roles.SingleOrDefault(r => r.Name == "Admin");
             if (adminRole == null)
             {
@@ -51,9 +51,8 @@ namespace EvaluationBackend.DATA
 
             // Check if admin user already exists
             var existingAdmin = context.Users.SingleOrDefault(u => u.UserName == adminUsername);
-            if (existingAdmin != null) return;  // Skip if already seeded
+            if (existingAdmin != null) return;  
 
-            // Create admin user
             var adminUser = new AppUser
             {
                 UserName = adminUsername,

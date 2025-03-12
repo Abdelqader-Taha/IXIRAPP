@@ -9,6 +9,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Linq;
 using Polly;
 using Microsoft.IdentityModel.Tokens;
+using IXIR.DATA.DTOs.Product;
 
 namespace EvaluationBackend.Services
 {
@@ -46,7 +47,10 @@ namespace EvaluationBackend.Services
 
         public async Task<(IEnumerable<StoreDTO> stores, int totalStors, string? error)> GetAllStores(int pageNumber, int pageSize)
         {
-            var store = await _repositoryWrapper.Store.GetAll();
+            var store = await _repositoryWrapper.Store.GetAll(
+
+                include: query =>query.Include(s=> s.Products)
+                );
 
             if (store.data == null || !store.data.Any())
             {
@@ -71,12 +75,16 @@ namespace EvaluationBackend.Services
 
         public async Task<(StoreDTO? store, string? error)> GetStoreById(Guid id)
         {
-            var store= await _repositoryWrapper.Store.GetById(id);
+            var store = await _repositoryWrapper.Store.Get(
+                predicate: s => s.Id == id,
+                include: query => query.Include(s => s.Products));
 
             if (store == null ||store.Deleted) { return (null, $"Store With  id {id} Not found or has been deleted"); }
             var storeDto = _mapper.Map<StoreDTO>(store);
             return (storeDto,null);
         }
+
+
 
         public async Task<(StoreDTO? store, string? error)> CreateStore(CreateStoreForm storeForm, Guid userId)
         {
@@ -88,17 +96,9 @@ namespace EvaluationBackend.Services
                     return (null, "User not found.");
                 }
 
-                var product = await _repositoryWrapper.Product.GetById(storeForm.ProductId);
-                if (product == null)
-                {
-                    return (null, "Product not found.");
-                }
-
                 var storeEntity = new Store
                 {
-                    UserId = userId,  // Assign extracted UserId from token
-                    ProductId = storeForm.ProductId,
-                    
+                    UserId = userId,
                     StoreName = storeForm.StoreName,
                     StoreType = storeForm.StoreType,
                     City = storeForm.City,
@@ -109,18 +109,26 @@ namespace EvaluationBackend.Services
                     Link = storeForm.Link
                 };
 
-                var createdStore = await _repositoryWrapper.Store.CreateStore(storeEntity);
+                // Fetch products based on the ProductIds from CreateStoreForm
+                var products = await _repositoryWrapper.Product.GetAll(p => storeForm.ProductIds.Contains(p.Id));
+
+                storeEntity.Products = products.data;
+
+                var createdStore = await _repositoryWrapper.Store.Add(storeEntity);
 
                 user.StoreCount++;
                 await _repositoryWrapper.User.Update(user);
                 await _repositoryWrapper.Save();
 
                 var storeDto = _mapper.Map<StoreDTO>(createdStore);
+
+                storeDto.Products = products.data.Select(p => _mapper.Map<ProductDTO>(p)).ToList();
+
                 return (storeDto, null);
             }
+
             catch (DbUpdateException ex)
             {
-                // This will handle foreign key violations and other DB related errors
                 return (null, $"An error occurred while saving the entity changes: {ex.InnerException?.Message ?? ex.Message}");
             }
             catch (Exception ex)
@@ -129,18 +137,18 @@ namespace EvaluationBackend.Services
             }
         }
 
+
+
+
         public async Task<(StoreDTO? store, string? error)> UpdateStore(Guid id, UpDateStoreForm storeForm)
         {
-            // Fetch the existing store from the database
             var store = await _repositoryWrapper.Store.GetById(id);
 
-            // Check if store is found and not marked as deleted
             if (store == null || store.Deleted)
             {
                 return (null, "Store not found or has been deleted");
             }
 
-            // Update only fields that have new values from the form, else retain the old values
             store.StoreName = string.IsNullOrEmpty(storeForm.StoreName) ? store.StoreName : storeForm.StoreName;
             store.StoreType = string.IsNullOrEmpty(storeForm.StoreType) ? store.StoreType : storeForm.StoreType;
             store.StoreLogo = string.IsNullOrEmpty(storeForm.StoreLogo) ? store.StoreLogo : storeForm.StoreLogo;
@@ -150,10 +158,22 @@ namespace EvaluationBackend.Services
             store.PhoneNumber = string.IsNullOrEmpty(storeForm.PhoneNumber) ? store.PhoneNumber : storeForm.PhoneNumber;
             store.PlatformType = string.IsNullOrEmpty(storeForm.PlatformType) ? store.PlatformType : storeForm.PlatformType;
 
-            // Ensure ProductId is updated only if a new ProductId is provided
-            if (storeForm.ProductId != Guid.Empty)
+            // Handle updating the products related to this store
+            if (storeForm.ProductIds != null && storeForm.ProductIds.Any())
             {
-                store.ProductId = storeForm.ProductId;
+                // Fetch the products by the provided ProductIds
+                var products = await _repositoryWrapper.Product.GetAll(
+                    predicate: p => storeForm.ProductIds.Contains(p.Id)
+                );
+
+                var proudcts = products.data;
+                store.Products = proudcts.ToList();
+        
+            }
+            else
+            {
+                // If no ProductIds are provided, you can clear the product list or retain existing products
+                store.Products.Clear();
             }
 
             // Save the updated store

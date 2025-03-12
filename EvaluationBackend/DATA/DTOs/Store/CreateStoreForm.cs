@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace EvaluationBackend.DATA.DTOs.Store
@@ -11,8 +12,7 @@ namespace EvaluationBackend.DATA.DTOs.Store
         public string StoreName { get; set; }
 
         [Required]
-        public Guid ProductId { get; set; }  // Reference to the Product entity
-
+        public List<Guid> ProductIds { get; set; } = new List<Guid>(); // Updated to support many-to-many
 
         public string? City { get; set; }
 

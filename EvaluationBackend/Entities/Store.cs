@@ -1,12 +1,11 @@
 ﻿using IXIR.Entities;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using System.Collections.Generic;
 
 namespace EvaluationBackend.Entities
 {
     public class Store : BaseEntity<Guid>
     {
-
         [Required]
         public Guid UserId { get; set; }  // Foreign Key
         public AppUser User { get; set; }
@@ -30,11 +29,9 @@ namespace EvaluationBackend.Entities
         public int Followers { get; set; }
 
         [Url]
-        public string Link { get; set; }
+        public string? Link { get; set; }
 
-        // Foreign Key to Product
-        [Required]
-        public Guid ProductId { get; set; }
-        public Product Product { get; set; }
+        // Many-to-Many Relationship
+        public List<Product> Products { get; set; } = new List<Product>();
     }
-    }
+}

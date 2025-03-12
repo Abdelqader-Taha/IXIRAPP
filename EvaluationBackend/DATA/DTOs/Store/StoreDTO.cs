@@ -1,4 +1,6 @@
-﻿using System;
+﻿using IXIR.DATA.DTOs.Product;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace EvaluationBackend.DATA.DTOs.Store
@@ -14,10 +16,7 @@ namespace EvaluationBackend.DATA.DTOs.Store
         [Required]
         public string StoreName { get; set; }
 
-        [Required]
-        public Guid ProductId { get; set; }  // Product reference
-
-        public string ProductName { get; set; }  // To return Product Name
+        public List<ProductDTO> Products { get; set; } = new List<ProductDTO>(); // Updated to return multiple products
 
         public string? City { get; set; }
 
@@ -36,6 +35,6 @@ namespace EvaluationBackend.DATA.DTOs.Store
         public int? Followers { get; set; }
 
         [Url]
-        public string Link { get; set; }
+        public string? Link { get; set; }
     }
 }

@@ -1,16 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace EvaluationBackend.DATA.DTOs.Store
 {
     public class UpDateStoreForm
     {
-        public string Link { get; set; }
+        public string? Link { get; set; }
+
         [Required]
         public string StoreName { get; set; }
 
         [Required]
-        public Guid ProductId { get; set; }  // Reference to Product entity
+        public List<Guid> ProductIds { get; set; } = new List<Guid>(); // Updated to support many-to-many
 
         public string? City { get; set; }
 
@@ -27,6 +29,5 @@ namespace EvaluationBackend.DATA.DTOs.Store
 
         [Required]
         public int? Followers { get; set; }
-
     }
 }
