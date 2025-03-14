@@ -74,9 +74,21 @@ app.UseMiddleware<CustomUnauthorizedMiddleware>();
 app.UseMiddleware<CustomPayloadTooLargeMiddleware>();
 app.UseStaticFiles();
 
-// ?? Default Swagger UI (No Dark Mode)
 app.UseSwagger();
-app.UseSwaggerUI();
+app.UseSwaggerUI(
+    options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "IXIR API v1");
+
+        // Inject custom CSS for Dark Mode
+        options.InjectJavascript("/swagger-ui/custom.js");
+
+        options.InjectStylesheet("/swagger-ui/custom.css");
+    }
+
+
+
+    );
 
 app.MapControllers();
 

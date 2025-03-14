@@ -33,5 +33,6 @@ namespace EvaluationBackend.Entities
 
         // Many-to-Many Relationship
         public List<Product> Products { get; set; } = new List<Product>();
+
     }
 }

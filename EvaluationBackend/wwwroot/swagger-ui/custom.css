@@ -1,0 +1,234 @@
+﻿/* Light Mode (Default) */
+body {
+    background-color: #ffffff;
+    color: #333333;
+    font-family: Arial, sans-serif;
+}
+
+#theme-toggle {
+    position: absolute;
+    top: 60px;
+    right: 10px;
+    padding: 10px 15px;
+    background-color: black;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 1000;
+}
+
+    #theme-toggle:hover {
+        background-color: #0056b3;
+    }
+
+/* Swagger UI Specific Styles for Light Mode */
+.swagger-ui .info {
+    margin-bottom: 20px;
+}
+
+.swagger-ui .opblock {
+    background-color: #f7f7f7;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    padding: 15px;
+}
+
+    .swagger-ui .opblock .opblock-summary {
+        background-color: #f7f7f7;
+        color: #333333;
+        padding: 10px;
+        border-radius: 4px;
+    }
+
+    .swagger-ui .opblock .opblock-summary-description {
+        color: #333333;
+        font-size: 14px;
+    }
+
+    .swagger-ui .opblock .opblock-section-header {
+        background-color: #f7f7f7;
+        color: #333333;
+        padding: 10px;
+        border-radius: 4px;
+        margin-top: 10px;
+    }
+
+        .swagger-ui .opblock .opblock-section-header h4 {
+            color: #333333;
+            font-size: 16px;
+            margin: 0;
+        }
+
+        .swagger-ui .opblock .opblock-section-header label {
+            color: #333333;
+            font-size: 14px;
+        }
+
+        .swagger-ui .opblock .opblock-section-header .btn {
+            color: #333333;
+            background-color: #e0e0e0;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+            .swagger-ui .opblock .opblock-section-header .btn:hover {
+                background-color: #cccccc;
+            }
+/* Dark Mode */
+body.dark-mode {
+    background-color: #121212;
+    color: #e0e0e0; /* Very light gray for general text */
+}
+
+    body.dark-mode #theme-toggle {
+        background-color: #1e1e1e;
+        color: #ffffff;
+    }
+
+        body.dark-mode #theme-toggle:hover {
+            background-color: #333333;
+        }
+
+    /* Swagger UI Specific Styles for Dark Mode */
+    body.dark-mode .swagger-ui .info {
+        color: #e0e0e0; /* Very light gray for info text */
+    }
+
+    body.dark-mode .swagger-ui .opblock {
+        background-color: #1e1e1e;
+        border: 1px solid #333333;
+    }
+
+        body.dark-mode .swagger-ui .opblock .opblock-summary {
+            background-color: #2d2d2d;
+            color: #e0e0e0; /* Very light gray for API call text */
+        }
+
+        body.dark-mode .swagger-ui .opblock .opblock-summary-description {
+            color: #e0e0e0; /* Very light gray for API descriptions */
+        }
+
+        body.dark-mode .swagger-ui .opblock .opblock-section-header {
+            background-color: #2d2d2d;
+            color: #e0e0e0; /* Very light gray for section headers */
+        }
+
+            body.dark-mode .swagger-ui .opblock .opblock-section-header h4 {
+                color: #e0e0e0; /* Very light gray for header titles */
+            }
+
+            body.dark-mode .swagger-ui .opblock .opblock-section-header label {
+                color: #e0e0e0; /* Very light gray for labels */
+            }
+
+            body.dark-mode .swagger-ui .opblock .opblock-section-header .btn {
+                color: #e0e0e0; /* Very light gray for buttons */
+                background-color: #333333;
+            }
+
+                body.dark-mode .swagger-ui .opblock .opblock-section-header .btn:hover {
+                    background-color: #444444;
+                }
+
+    /* Specific Styles for API Name and Links */
+    body.dark-mode .swagger-ui .info .title {
+        color: #e0e0e0; /* Very light gray for the app name (e.g., IXIR API) */
+    }
+
+    body.dark-mode .swagger-ui .opblock .opblock-summary-path {
+        color: #e0e0e0; /* Very light gray for API call links */
+    }
+
+        body.dark-mode .swagger-ui .opblock .opblock-summary-path:hover {
+            color: #ffffff; /* White for hover state */
+        }
+
+    /* Styles for Section Names (e.g., Attachments, Auth, Product, Stores) */
+    body.dark-mode .swagger-ui .opblock-tag {
+        color: #e0e0e0; /* Very light gray for section names */
+    }
+
+        body.dark-mode .swagger-ui .opblock-tag:hover {
+            color: #ffffff; /* White for hover state */
+        }
+
+    /* Styles for Request Body and Responses */
+    body.dark-mode .swagger-ui .opblock .opblock-body {
+        color: #e0e0e0; /* Very light gray for text inside API calls */
+    }
+
+        body.dark-mode .swagger-ui .opblock .opblock-body .parameters-container {
+            color: #e0e0e0; /* Very light gray for parameters */
+        }
+
+            body.dark-mode .swagger-ui .opblock .opblock-body .parameters-container .parameter__name {
+                color: #e0e0e0; /* Very light gray for parameter names (e.g., language) */
+            }
+
+            body.dark-mode .swagger-ui .opblock .opblock-body .parameters-container .parameter__type {
+                color: #e0e0e0; /* Very light gray for parameter types (e.g., string, array) */
+            }
+
+        body.dark-mode .swagger-ui .opblock .opblock-body .responses-wrapper {
+            color: #e0e0e0; /* Very light gray for responses */
+        }
+
+            body.dark-mode .swagger-ui .opblock .opblock-body .responses-wrapper .response-col_status {
+                color: #e0e0e0; /* Very light gray for response codes (e.g., 200) */
+            }
+
+            body.dark-mode .swagger-ui .opblock .opblock-body .responses-wrapper .response-col_description {
+                color: #e0e0e0; /* Very light gray for response descriptions (e.g., Success) */
+            }
+
+        body.dark-mode .swagger-ui .opblock .opblock-body .no-parameters {
+            color: #e0e0e0; /* Very light gray for "No parameters" text */
+        }
+
+    /* Styles for "Try it out" Button */
+    body.dark-mode .swagger-ui .opblock .try-out__btn {
+        color: #e0e0e0; /* Very light gray for "Try it out" button text */
+        background-color: #333333; /* Dark background for the button */
+        border: 1px solid #444444; /* Slightly lighter border for visibility */
+    }
+
+        body.dark-mode .swagger-ui .opblock .try-out__btn:hover {
+            background-color: #444444; /* Slightly lighter background on hover */
+            border-color: #555555; /* Slightly lighter border on hover */
+        }
+
+    /* Additional styles for request body content */
+    body.dark-mode .swagger-ui .opblock .opblock-body .request-body {
+        color: #e0e0e0; /* Very light gray for request body text */
+    }
+
+        body.dark-mode .swagger-ui .opblock .opblock-body .request-body .request-body__description {
+            color: #e0e0e0; /* Very light gray for request body descriptions */
+        }
+
+        body.dark-mode .swagger-ui .opblock .opblock-body .request-body .request-body__content {
+            color: #e0e0e0; /* Very light gray for request body content */
+        }
+
+            body.dark-mode .swagger-ui .opblock .opblock-body .request-body .request-body__content .body-param__example {
+                color: #e0e0e0; /* Very light gray for example text */
+            }
+
+            body.dark-mode .swagger-ui .opblock .opblock-body .request-body .request-body__content .body-param__example .renderedMarkdown {
+                color: #e0e0e0; /* Very light gray for rendered markdown */
+            }
+
+
+.swagger-ui .scheme-container {
+    background-color: transparent;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .15);
+    margin: 0 0 20px;
+    padding: 30px 0;
+}
+
+
+

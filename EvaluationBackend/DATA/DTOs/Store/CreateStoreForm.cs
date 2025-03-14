@@ -31,5 +31,7 @@ namespace EvaluationBackend.DATA.DTOs.Store
         public int Followers { get; set; }
 
         public string? Link { get; set; }
+        public DateTime? CreationDate { get; set; } = DateTime.UtcNow;
+
     }
 }

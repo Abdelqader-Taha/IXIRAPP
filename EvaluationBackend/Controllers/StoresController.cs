@@ -6,7 +6,6 @@ using System.Security.Claims;
 
 namespace EvaluationBackend.Controllers
 {
-    [Authorize(Roles = "DataEntry")]
     [Route("api/[controller]")]
     [ApiController]
     public class StoresController : ControllerBase
@@ -17,6 +16,8 @@ namespace EvaluationBackend.Controllers
         {
             _storeService = storeService;
         }
+
+        [Authorize(Roles = "DataEntry,Admin")]
 
         [HttpGet]
         public async Task<IActionResult> GetAllStoresAsync(int pageNumber = 1, int pageSize = 10)
@@ -45,6 +46,7 @@ namespace EvaluationBackend.Controllers
             return Ok(new { stores, paginationMeta });
         }
 
+        [Authorize(Roles = "DataEntry")]
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetStoreByIdAsync(Guid id)
@@ -57,7 +59,7 @@ namespace EvaluationBackend.Controllers
             return Ok(store);
         }
 
-        [Authorize]
+        [Authorize(Roles = "DataEntry")]
         [HttpPost]
         public async Task<IActionResult> CreateStoreAsync([FromBody] CreateStoreForm req)
         {
@@ -91,6 +93,7 @@ namespace EvaluationBackend.Controllers
         }
 
 
+        [Authorize(Roles = "DataEntry")]
 
         [HttpPut("{id}")]
         public async Task<IActionResult> EditStoreByIdAsync(Guid id, [FromBody] UpDateStoreForm req)
@@ -108,6 +111,7 @@ namespace EvaluationBackend.Controllers
             return Ok( new {Message= "Store updated successfully." });
         }
 
+        [Authorize(Roles = "DataEntry")]
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteStoreByIdAsync(Guid id)
@@ -119,6 +123,7 @@ namespace EvaluationBackend.Controllers
             }
             return Ok(new { message = "Store deleted successfully." });
         }
+        [Authorize(Roles = "DataEntry")]
 
         [HttpPut("undelete/{id}")]
         public async Task<IActionResult> UnDelete(Guid id)

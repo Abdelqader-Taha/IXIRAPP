@@ -106,7 +106,8 @@ namespace EvaluationBackend.Services
                     StoreLogo = storeForm.StoreLogo,
                     PlatformType = storeForm.PlatformType,
                     Followers = storeForm.Followers,
-                    Link = storeForm.Link
+                    Link = storeForm.Link,
+                    CreationDate=storeForm.CreationDate
                 };
 
                 // Fetch products based on the ProductIds from CreateStoreForm

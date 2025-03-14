@@ -9,7 +9,7 @@ namespace EvaluationBackend.Services
 {
     public interface IUserService
     {
-        Task<(string? token,string role,string? error)> Login(LoginForm loginForm);
+        Task<(string? token,string? error)> Login(LoginForm loginForm);
         Task<(AppUser? user, string? error)> DeleteUser(Guid id);
         Task<(UserDto? userDto, string? error)> Register(RegisterForm registerForm);
         Task<(AppUser? user, string? error)> UpdateUser(UpdateUserForm updateUserForm, Guid id);
@@ -32,15 +32,15 @@ namespace EvaluationBackend.Services
             _tokenService = tokenService;
         }
 
-        public async Task<(string? token, string? role, string? error)> Login(LoginForm loginForm)
+        public async Task<(string? token,  string? error)> Login(LoginForm loginForm)
         {
             var user = await _repositoryWrapper.User.Get(
                 u => u.UserName == loginForm.UserName && !u.Deleted,
                 i => i.Include(x => x.Role)
             );
 
-            if (user == null) return (null, null, "User not found or deleted");
-            if (!BCrypt.Net.BCrypt.Verify(loginForm.Password, user.Password)) return (null, null, "Wrong password");
+            if (user == null) return (null,  "User not found or deleted");
+            if (!BCrypt.Net.BCrypt.Verify(loginForm.Password, user.Password)) return (null, "Wrong password");
 
             var userDto = _mapper.Map<UserDto>(user);
             var token = _tokenService.CreateToken(userDto, user.Role);
@@ -48,7 +48,7 @@ namespace EvaluationBackend.Services
             user.LastActive = DateTime.UtcNow;
             await _repositoryWrapper.Save();
 
-            return (token, user.Role?.Name, null); // Returning role and avatar along with token
+            return (token, null); // Returning role and avatar along with token
         }
 
 

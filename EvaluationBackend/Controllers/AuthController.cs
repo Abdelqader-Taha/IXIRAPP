@@ -24,9 +24,9 @@ namespace EvaluationBackend.Controllers
         [HttpPost("Login")]
         public async Task<IActionResult> Login(LoginForm loginForm)
         {
-            var (token, role, error) = await _userService.Login(loginForm);
+            var (token,  error) = await _userService.Login(loginForm);
             if (error != null) return Unauthorized(new { message = error });
-            return Ok(new { token, role });
+            return Ok(new { token,  });
         }
 
 

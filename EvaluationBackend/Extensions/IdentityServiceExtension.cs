@@ -14,7 +14,15 @@ namespace EvaluationBackend.Extensions
             
             services.AddSwaggerGen(option =>
             {
-                option.SwaggerDoc("v1", new OpenApiInfo { Title = "IXIR API", Version = "v1" });
+                option.SwaggerDoc("v1", new OpenApiInfo { Title = "IXIR API", Version = "v1",
+                Contact =new OpenApiContact
+                {
+                    Name = " Made By : Abdelqader Taha",
+                    
+                    Url = new Uri("https://www.linkedin.com/in/abdelqader-taha-5b1568335/")
+                }
+                
+                });
                 option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     In = ParameterLocation.Header,

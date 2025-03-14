@@ -36,5 +36,7 @@ namespace EvaluationBackend.DATA.DTOs.Store
 
         [Url]
         public string? Link { get; set; }
+        public DateTime? CreationDate { get; set; } = DateTime.UtcNow;
+
     }
 }
