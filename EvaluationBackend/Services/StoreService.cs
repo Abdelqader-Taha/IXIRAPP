@@ -10,6 +10,7 @@ using System.Linq;
 using Polly;
 using Microsoft.IdentityModel.Tokens;
 using IXIR.DATA.DTOs.Product;
+using OneSignalApi.Model;
 
 namespace EvaluationBackend.Services
 {
@@ -20,7 +21,8 @@ namespace EvaluationBackend.Services
         Task<(IEnumerable<StoreDTO> stores,int totalStors, string? error)> GetAllStores(int pageNumber, int pageSize);
         Task<(StoreDTO? store, string? error)> UpdateStore(Guid id,UpDateStoreForm store);
         Task<(bool success, string? error)> DeleteStore(Guid id);
-        Task<(StoreDTO? store, string? error)> UnDeleteStore(Guid id); 
+        Task<(StoreDTO? store, string? error)> UnDeleteStore(Guid id);
+        Task<(IEnumerable<StoreDTO> stores, string? error)> GetStoresByUserId(Guid userId, int pageNumber = 1, int pageSize = 10);
        // Task<(IEnumerable<string> productTypes, string? error)> GetDistinctProductTypes();
        // Task<(IEnumerable<StoreDTO> stores, string? error)> GetStoresByProductType(List<string> productTypes);
 
@@ -38,9 +40,49 @@ namespace EvaluationBackend.Services
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
         }
-       
 
 
+
+        public async Task<(IEnumerable<StoreDTO> stores, string? error)> GetStoresByUserId(Guid userId, int pageNumber = 1, int pageSize = 10)
+        {
+            try
+            {
+                // Get all stores associated with the userId
+                var stores = await _repositoryWrapper.Store.GetAll(
+                    include: query => query.Include(s => s.Products)
+                );
+
+                if (stores.data == null || !stores.data.Any())
+                {
+                    return (new List<StoreDTO>(), "No stores found");
+                }
+
+                // Filter stores by the userId
+                var userStores = stores.data
+                    .Where(s => !s.Deleted && s.UserId == userId)
+                    .ToList();
+
+                if (!userStores.Any())
+                {
+                    return (new List<StoreDTO>(), "No stores found for the user");
+                }
+
+                // Apply pagination
+                var totalStores = userStores.Count();
+                var pagedStores = userStores
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                var storeDtos = _mapper.Map<IEnumerable<StoreDTO>>(pagedStores);
+
+                return (storeDtos, null);
+            }
+            catch (Exception ex)
+            {
+                return (new List<StoreDTO>(), ex.Message); // Return an empty list and error message if an exception occurs
+            }
+        }
 
 
 
@@ -159,33 +201,23 @@ namespace EvaluationBackend.Services
             store.PhoneNumber = string.IsNullOrEmpty(storeForm.PhoneNumber) ? store.PhoneNumber : storeForm.PhoneNumber;
             store.PlatformType = string.IsNullOrEmpty(storeForm.PlatformType) ? store.PlatformType : storeForm.PlatformType;
 
-            // Handle updating the products related to this store
-            if (storeForm.ProductIds != null && storeForm.ProductIds.Any())
+            
+            try
             {
-                // Fetch the products by the provided ProductIds
-                var products = await _repositoryWrapper.Product.GetAll(
-                    predicate: p => storeForm.ProductIds.Contains(p.Id)
-                );
+                // Save the updated store
+                var updatedStore = await _repositoryWrapper.Store.UpdateStore(store);
+                await _repositoryWrapper.Save();
 
-                var proudcts = products.data;
-                store.Products = proudcts.ToList();
-        
+                // Map the updated store to a DTO
+                var storeDto = _mapper.Map<StoreDTO>(updatedStore);
+                return (storeDto, null);
             }
-            else
+            catch (Exception ex)
             {
-                // If no ProductIds are provided, you can clear the product list or retain existing products
-                store.Products.Clear();
+                // Log or return a more specific error message
+                return (null, $"An error occurred while saving the store: {ex.Message}");
             }
-
-            // Save the updated store
-            var updatedStore = await _repositoryWrapper.Store.UpdateStore(store);
-            await _repositoryWrapper.Save();
-
-            // Map the updated store to a DTO
-            var storeDto = _mapper.Map<StoreDTO>(updatedStore);
-            return (storeDto, null);
         }
-
 
 
         public async Task<(bool success, string? error)> DeleteStore(Guid id)

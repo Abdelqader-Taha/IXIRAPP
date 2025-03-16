@@ -35,44 +35,36 @@ namespace IXIR.Controllers
             return Ok(product);
         }
         [HttpGet]
-        public async Task<IActionResult> GetProducts([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetProducts( int pageNumber = 1, int pageSize = 10)
         {
-            try
-            {
-                // Ensure pageSize is at least 1; if it's 0, return a custom message
-                if (pageSize <= 0)
+            
+
+                var (products, totalProducts, error) = await _productService.GetAllProducts(pageNumber, pageSize);
+
+                if (!string.IsNullOrEmpty(error) )
                 {
-                    return BadRequest(new { message = "Page size must be greater than 0." });
+                  return BadRequest(new { message = error });
+
                 }
+              var productlist = products ?? new List<ProductDTO>();
 
-                var (products, totalCount, error) = await _productService.GetProducts(pageNumber, pageSize);
-
-                if (!string.IsNullOrEmpty(error) || products == null || !products.Any())
-                {
-                    return Ok(new
-                    {
-                        products = new List<ProductDTO>(), // Return an empty list
-                        totalCount = 0,
-                        pageNumber,
-                        pageSize,
-                        totalPages = 0,
-                        message = "No products available."
-                    });
-                }
-
-                return Ok(new
-                {
-                    products,
-                    totalCount,
-                    pageNumber,
-                    pageSize,
-                    totalPages = (int)Math.Ceiling((double)totalCount / pageSize)
-                });
-            }
-            catch (Exception ex)
+            var paginationMeta = new
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An error occurred while fetching products.", error = ex.Message });
-            }
+                currentpage = pageNumber,
+                pageSize = pageSize,
+                totalProducts=totalProducts,
+                totalPages = totalProducts > 0 ? (int)Math.Ceiling(totalProducts / (double)pageSize) : 0
+            };
+            return Ok(new
+            {
+                data=productlist,
+                paginationMeta,
+                message= productlist.Any()? null:" No product found"
+            });
+
+
+
+
         }
 
         [HttpPost]

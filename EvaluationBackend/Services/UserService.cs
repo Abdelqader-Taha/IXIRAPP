@@ -4,6 +4,7 @@ using EvaluationBackend.DATA.DTOs.User;
 using EvaluationBackend.Entities;
 using EvaluationBackend.Repository;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace EvaluationBackend.Services
 {
@@ -15,7 +16,7 @@ namespace EvaluationBackend.Services
         Task<(AppUser? user, string? error)> UpdateUser(UpdateUserForm updateUserForm, Guid id);
         Task<(UserDto? user, string? error)> GetUserById(Guid id);
         Task<(IEnumerable<UserDto> users, int totalUsers, string? error)> GetAllUsers(int pageNumber, int pageSize);
-        Task<(UserDto? user, string? error)> ChangePassword(ChangePasswordForm changePasswordForm, Guid id);
+        Task<(UserDto? user, string? error)> ChangePassword(ChangePasswordForm changePasswordForm, ClaimsPrincipal userClaims);
 
     }
 
@@ -48,7 +49,7 @@ namespace EvaluationBackend.Services
             user.LastActive = DateTime.UtcNow;
             await _repositoryWrapper.Save();
 
-            return (token, null); // Returning role and avatar along with token
+            return (token, null); 
         }
 
 
@@ -78,7 +79,7 @@ namespace EvaluationBackend.Services
             {
                 UserName = registerForm.UserName,
                 FullName = registerForm.FullName,
-                avatar = registerForm.avatar,  // Ensuring avatar is set during registration
+                avatar = registerForm.avatar,  
                 Password = BCrypt.Net.BCrypt.HashPassword(registerForm.Password),
                 RoleId = role.Id
             };
@@ -87,7 +88,7 @@ namespace EvaluationBackend.Services
             var userDto = _mapper.Map<UserDto>(newUser);
             userDto.Token = _tokenService.CreateToken(userDto, role);
 
-            return (userDto, null); // Avatar will be included in the userDto when returning
+            return (userDto, null); 
         }
 
 
@@ -111,7 +112,7 @@ namespace EvaluationBackend.Services
             await _repositoryWrapper.User.UpdateUser(user);
             await _repositoryWrapper.Save();
 
-            return (user, null);  // Return updated user, including avatar
+            return (user, null);  
         }
 
 
@@ -126,7 +127,23 @@ namespace EvaluationBackend.Services
 
             if (user == null) return (null, "User not found or deleted");
 
+            // Manually map properties to UserDto
             var userDto = _mapper.Map<UserDto>(user);
+
+            // Remove Token and StoreCount based on role
+            if (user.Role != null && (user.Role.Name == "Admin" || user.Role.Name == "Data Entry"))
+            {
+                // Use reflection to remove Token and StoreCount dynamically
+                var propertiesToRemove = new[] { "Token", "StoreCount" };
+                foreach (var property in propertiesToRemove)
+                {
+                    var propInfo = userDto.GetType().GetProperty(property);
+                    if (propInfo != null)
+                    {
+                        propInfo.SetValue(userDto, null); // Or handle as necessary (e.g., remove from a dictionary, etc.)
+                    }
+                }
+            }
 
             // Check if the user has the "Data Entry" role, and if so, add the StoreCount
             if (user.Role != null && user.Role.Name == "Data Entry")
@@ -136,6 +153,7 @@ namespace EvaluationBackend.Services
 
             return (userDto, null);
         }
+
 
 
         public async Task<(IEnumerable<UserDto> users, int totalUsers, string? error)> GetAllUsers(int pageNumber, int pageSize)
@@ -172,20 +190,39 @@ namespace EvaluationBackend.Services
         }
 
 
-        public async Task<(UserDto? user, string? error)> ChangePassword(ChangePasswordForm changePasswordForm, Guid id)
+        public async Task<(UserDto? user, string? error)> ChangePassword(ChangePasswordForm changePasswordForm, ClaimsPrincipal userClaims)
         {
-            var user = await _repositoryWrapper.User.Get(u => u.Id == id && !u.Deleted);
+            // Extract userId from the token
+            var userIdClaim = userClaims.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return (null, "User ID not found in the token.");
+            }
+
+            Guid userId;
+            if (!Guid.TryParse(userIdClaim.Value, out userId))
+            {
+                return (null, "Invalid User ID in the token.");
+            }
+
+            // Retrieve the user from the database using the userId extracted from the token
+            var user = await _repositoryWrapper.User.Get(u => u.Id == userId && !u.Deleted,
+                include: query => query.Include(u => u.Role));
+
             if (user == null) return (null, "User not found or deleted");
 
+            // Hash the new password and update the user's password
             user.Password = BCrypt.Net.BCrypt.HashPassword(changePasswordForm.NewPassword);
 
             await _repositoryWrapper.User.UpdateUser(user);
             await _repositoryWrapper.Save();
 
+            // Map the updated user to UserDto
             var userDto = _mapper.Map<UserDto>(user);
 
             return (userDto, null);
         }
+
 
     }
 }

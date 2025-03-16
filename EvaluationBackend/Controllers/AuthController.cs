@@ -3,6 +3,7 @@ using EvaluationBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OneSignalApi.Model;
+using System.Security.Claims;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EvaluationBackend.Controllers
@@ -68,20 +69,22 @@ namespace EvaluationBackend.Controllers
                 return BadRequest(new { message = error });
             }
 
-            if (users == null || !users.Any())
-            {
-                return Ok(new { message = "No users found", paginationMeta = new { currentPage = pageNumber, pageSize, totalUsers = 0, totalPages = 0 } });
-            }
+            var usersList = users ?? new List<UserDto>(); 
 
             var paginationMeta = new
             {
                 currentPage = pageNumber,
                 pageSize = pageSize,
                 totalUsers = totalUsers,
-                totalPages = (int)Math.Ceiling(totalUsers / (double)pageSize)
+                totalPages = totalUsers > 0 ? (int)Math.Ceiling(totalUsers / (double)pageSize) : 0
             };
 
-            return Ok(new { users, paginationMeta });
+            return Ok(new
+            {
+                data = usersList,
+                paginationMeta,
+                message = usersList.Any() ? null : "No users found"
+            });
         }
 
 
@@ -117,11 +120,29 @@ namespace EvaluationBackend.Controllers
 
             return Ok(new { message = "User successfully deleted." });
         }
-        [Authorize(Roles = "Admin")]
-        [HttpPut("change-password/{id}")]
-        public async Task<IActionResult> ChangePassword([FromRoute] Guid id, [FromBody] ChangePasswordForm changePasswordForm)
+
+        [Authorize(Roles = "Admin,DataEntry")]
+        [HttpPut("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordForm changePasswordForm)
         {
-            var (user, error) = await _userService.ChangePassword(changePasswordForm, id);
+            // Extract user ID from the token
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return BadRequest(new { message = "User ID not found in the token." });
+            }
+
+            Guid userId;
+            if (!Guid.TryParse(userIdClaim.Value, out userId))
+            {
+                return BadRequest(new { message = "Invalid User ID in the token." });
+            }
+
+            // Call the service method and explicitly specify types for deconstruction
+            var result = await _userService.ChangePassword(changePasswordForm, User);
+
+            var user = result.user;
+            var error = result.error;
 
             if (error != null)
             {
@@ -130,6 +151,9 @@ namespace EvaluationBackend.Controllers
 
             return Ok(new { message = "Password changed successfully", user });
         }
+
+
+
 
         [HttpGet("Profile")]
         public async Task<IActionResult> GetProfile()

@@ -4,6 +4,7 @@ using IXIR.DATA.DTOs.Product;
 using IXIR.Entities;
 using Microsoft.EntityFrameworkCore.Query;
 using System.Linq.Expressions;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace IXIR.Services
 {
@@ -11,12 +12,8 @@ namespace IXIR.Services
     public interface IProductService
     {
 
-        Task<(IEnumerable<ProductDTO> products, int totalProducts, string? error)> GetProducts(int pageNumber, int pageSize);
-            Task<(List<ProductDTO> data, int totalCount)> GetProducts(
-            Expression<Func<Product, bool>> predicate,
-            Func<IQueryable<Product>, IIncludableQueryable<Product, object>> include,
-            int pageNumber = 0);
-
+        Task<(IEnumerable<ProductDTO> products, int totalProducts, string? error)> GetAllProducts(int pageNumber, int pageSize);          
+        
         Task<ProductDTO> CreateProduct(string name);
         Task<ProductDTO> UpdateProduct(Guid id, string name);
         Task<bool> DeleteProduct(Guid id);
@@ -48,37 +45,38 @@ namespace IXIR.Services
         }
 
 
-        public async Task<(IEnumerable<ProductDTO> products, int totalProducts, string? error)> GetProducts(int pageNumber, int pageSize)
+        public async Task<(IEnumerable<ProductDTO> products, int totalProducts, string? error)> GetAllProducts(int pageNumber, int pageSize)
         {
-            var (products, totalCount) = await _repositoryWrapper.Product.GetProducts(pageNumber);
-
-            if (products == null || !products.Any())
+            try
             {
-                return (null, 0, "No products found");
+                // Fetch products and total count
+                var (products, totalCount) = await _repositoryWrapper.Product.GetProducts(pageNumber);
+
+                if (products == null || !products.Any())
+                {
+                    return (new List<ProductDTO>(), 0, ""); // Return empty list if no products found
+                }
+
+                var activeProducts = products.Where(product => !product.Deleted).ToList();
+                var totalProducts = activeProducts.Count();
+
+                var pagedProducts = activeProducts
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                var productDtos = _mapper.Map<IEnumerable<ProductDTO>>(pagedProducts);
+
+                return (productDtos, totalProducts, null); 
             }
-
-            var activeProducts = products.Where(product => !product.Deleted).ToList();
-
-            var pagedProducts = activeProducts
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize);
-
-            var productDtos = _mapper.Map<IEnumerable<ProductDTO>>(pagedProducts);
-            var totalProducts = activeProducts.Count(); // Count after filtering deleted products
-
-            return (productDtos, totalProducts, null);
+            catch (Exception ex)
+            {
+                return (new List<ProductDTO>(), 0, ex.Message); 
+            }
         }
 
 
-        public async Task<(List<ProductDTO> data, int totalCount)> GetProducts(
-            Expression<Func<Product, bool>> predicate,
-            Func<IQueryable<Product>, IIncludableQueryable<Product, object>> include,
-            int pageNumber = 0)
-        {
-            var (products, totalCount) = await _repositoryWrapper.Product.GetProducts(predicate, include, pageNumber);
-            var productDTOs = _mapper.Map<List<ProductDTO>>(products);
-            return (productDTOs, totalCount);
-        }
+
 
         public async Task<ProductDTO> CreateProduct(string name)
         {

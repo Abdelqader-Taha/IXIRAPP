@@ -17,6 +17,49 @@ namespace EvaluationBackend.Controllers
             _storeService = storeService;
         }
 
+
+
+        [Authorize(Roles = "Admin,DataEntry")]
+        [HttpGet("by-creator-id")]
+        public async Task<IActionResult> GetStoresByUserId(int pageNumber = 1, int pageSize = 10)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier); // Assuming the userId is stored under the NameIdentifier claim
+            if (userIdClaim == null)
+            {
+                return BadRequest(new { message = "User ID is not found in the token." });
+            }
+
+            Guid userId;
+            if (!Guid.TryParse(userIdClaim.Value, out userId))
+            {
+                return BadRequest(new { message = "Invalid User ID in the token." });
+            }
+
+            var result = await _storeService.GetStoresByUserId(userId, pageNumber, pageSize);
+
+            if (!string.IsNullOrEmpty(result.error))
+            {
+                return BadRequest(new { message = result.error });
+            }
+
+            var storesList = result.stores ?? new List<StoreDTO>();
+
+            var paginationMeta = new
+            {
+                currentPage = pageNumber,
+                pageSize = pageSize,
+                totalStores = result.stores.Count(),
+                totalPages = result.stores.Count() > 0 ? (int)Math.Ceiling(result.stores.Count() / (double)pageSize) : 0
+            };
+
+            return Ok(new
+            {
+                data = storesList,
+                paginationMeta,
+                message = storesList.Any() ? null : "No stores found"
+            });
+        }
+
         [Authorize(Roles = "DataEntry,Admin")]
 
         [HttpGet]
@@ -28,22 +71,27 @@ namespace EvaluationBackend.Controllers
             {
                 return NotFound(new { message = error });
             }
-
-            if (stores == null || !stores.Any())
-            {
-                return Ok(new { message = "No stores available.", paginationMeta = new { currentPage = pageNumber, pageSize, totalStors = 0, totalPages = 0 } });
-            }
+            var storeslist = stores ?? new List<StoreDTO>();
 
             var paginationMeta = new
             {
                 currentPage = pageNumber,
                 pageSize = pageSize,
                 totalStores = totalStors,
-                totalPages = (int)Math.Ceiling(totalStors / (double)pageSize)
+                totalPages = totalStors > 0 ? (int)Math.Ceiling(totalStors / (double)pageSize) : 0
             };
 
 
-            return Ok(new { stores, paginationMeta });
+            return Ok(
+
+                 new
+                 {
+                     data = storeslist,
+                     paginationMeta,
+                     message = storeslist.Any() ? null : "No stores available."
+
+                 }
+                );
         }
 
         [Authorize(Roles = "DataEntry")]
@@ -123,6 +171,9 @@ namespace EvaluationBackend.Controllers
             }
             return Ok(new { message = "Store deleted successfully." });
         }
+
+        [ApiExplorerSettings(IgnoreApi = true)]
+
         [Authorize(Roles = "DataEntry")]
 
         [HttpPut("undelete/{id}")]
