@@ -5,7 +5,6 @@ namespace EvaluationBackend.Entities
 {
     public class AppUser : BaseEntity<Guid>
     {
-        //public string? Email { get; set; }
         
         public string UserName { get; set; }
         public string FullName { get; set; }

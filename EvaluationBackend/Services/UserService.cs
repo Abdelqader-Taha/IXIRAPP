@@ -106,7 +106,7 @@ namespace EvaluationBackend.Services
             {
                 var role = await _repositoryWrapper.Role.Get(r => r.Id == updateUserForm.RoleId);
                 if (role == null) return (null, "Role not found");
-                user.RoleId = role.Id;  // Update the role if the new RoleId is valid
+                user.RoleId = role.Id; 
             }
 
             await _repositoryWrapper.User.UpdateUser(user);
@@ -122,30 +122,26 @@ namespace EvaluationBackend.Services
         {
             var user = await _repositoryWrapper.User.Get(
                 u => u.Id == id && !u.Deleted,
-                include: query => query.Include(u => u.Role) // Include Role here
+                include: query => query.Include(u => u.Role) 
             );
 
             if (user == null) return (null, "User not found or deleted");
 
-            // Manually map properties to UserDto
             var userDto = _mapper.Map<UserDto>(user);
 
-            // Remove Token and StoreCount based on role
             if (user.Role != null && (user.Role.Name == "Admin" || user.Role.Name == "Data Entry"))
             {
-                // Use reflection to remove Token and StoreCount dynamically
                 var propertiesToRemove = new[] { "Token", "StoreCount" };
                 foreach (var property in propertiesToRemove)
                 {
                     var propInfo = userDto.GetType().GetProperty(property);
                     if (propInfo != null)
                     {
-                        propInfo.SetValue(userDto, null); // Or handle as necessary (e.g., remove from a dictionary, etc.)
+                        propInfo.SetValue(userDto, null); 
                     }
                 }
             }
 
-            // Check if the user has the "Data Entry" role, and if so, add the StoreCount
             if (user.Role != null && user.Role.Name == "Data Entry")
             {
                 userDto.StoreCount = user.StoreCount;
